@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Livewire\Volt\Volt;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,4 +24,17 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
-require __DIR__.'/auth.php';
+//Pet Routes
+Route::view('pets', 'pets.index')
+    ->middleware(['auth'])
+    ->name('pets.index');
+
+Route::view('pets/create', 'pets.create')
+    ->middleware(['auth'])
+    ->name('pets.create');
+
+Volt::route('pets/{pet}/edit', 'pets.edit-pet')
+    ->middleware(['auth'])
+    ->name('pets.edit');
+
+require __DIR__ . '/auth.php';
