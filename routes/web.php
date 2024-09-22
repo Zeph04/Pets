@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Pet;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -36,5 +37,14 @@ Route::view('pets/create', 'pets.create')
 Volt::route('pets/{pet}/edit', 'pets.edit-pet')
     ->middleware(['auth'])
     ->name('pets.edit');
+
+Route::get('pets/{pet}', function (Pet $pet) {
+    if (! $pet->for_adoption) {
+        abort(404);
+    }
+    $user = $pet->user;
+
+    return view('pets.view', ['pet' => $pet, 'user' => $user]);
+})->name('pets.view');
 
 require __DIR__ . '/auth.php';

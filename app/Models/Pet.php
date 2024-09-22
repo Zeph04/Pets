@@ -10,8 +10,12 @@ class Pet extends Model
 {
     use HasFactory, HasUuids;
 
-    protected $guarded =[
+    protected $guarded = [
         'id'
+    ];
+
+    protected $casts = [
+        'for_adoption' => 'boolean',
     ];
 
     public function user()

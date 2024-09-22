@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('breed');
             $table->date('birthday');
-            $table->integer('age');
-            $table->boolean('for_adoption')->default(false);
+            $table->boolean('for_adoption')->default(false)->nullable();
+            $table->integer('heart_count')->nullable();
             $table->timestamps();
         });
     }
