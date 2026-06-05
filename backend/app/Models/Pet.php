@@ -143,11 +143,13 @@ class Pet extends Model
     public function getFeaturedImageUrlAttribute(): ?string
     {
         if ($this->featured_image) {
-            return '/storage/' . $this->featured_image;
+            return str_starts_with($this->featured_image, 'http')
+                ? $this->featured_image
+                : '/storage/' . $this->featured_image;
         }
 
         $primary = $this->images->where('is_primary', true)->first() ?? $this->images->first();
 
-        return $primary ? '/storage/' . $primary->path : null;
+        return $primary ? $primary->url : null;
     }
 }

@@ -7,6 +7,7 @@ use App\Models\PetImage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ImageService
 {
@@ -19,9 +20,16 @@ class ImageService
      */
     public function uploadPetImage(Pet $pet, UploadedFile $file, bool $isPrimary = false): PetImage
     {
-        $filename  = $this->generateFilename($file);
-        $directory = "pets/{$pet->id}";
-        $path      = $file->storeAs($directory, $filename, self::DISK);
+        // Upload to Cloudinary if configured, else fallback to local
+        if (config('cloudinary.cloud_url')) {
+            $path = Cloudinary::upload($file->getRealPath(), [
+                'folder' => "pets/{$pet->id}"
+            ])->getSecurePath();
+        } else {
+            $filename  = $this->generateFilename($file);
+            $directory = "pets/{$pet->id}";
+            $path      = $file->storeAs($directory, $filename, self::DISK);
+        }
 
         // If this is set as primary, unset any existing primary
         if ($isPrimary) {
@@ -44,7 +52,21 @@ class ImageService
      */
     public function deletePetImage(PetImage $image): bool
     {
-        Storage::disk(self::DISK)->delete($image->path);
+        if (str_starts_with($image->path, 'http')) {
+            // It's on Cloudinary. Extract public ID and delete.
+            // Example URL: https://res.cloudinary.com/demo/image/upload/v12345/pets/id/file.jpg
+            $parts = explode('/', $image->path);
+            $publicId = explode('.', end($parts))[0];
+            $folder = $parts[count($parts) - 2];
+            $parentFolder = $parts[count($parts) - 3];
+            try {
+                Cloudinary::destroy("{$parentFolder}/{$folder}/{$publicId}");
+            } catch (\Exception $e) {
+                // Ignore delete errors to ensure DB record is still deleted
+            }
+        } else {
+            Storage::disk(self::DISK)->delete($image->path);
+        }
         $image->delete();
 
         // If a primary image was deleted, promote the next image
@@ -62,7 +84,9 @@ class ImageService
      */
     public function deleteAvatar(string $path): void
     {
-        Storage::disk(self::DISK)->delete($path);
+        if (!str_starts_with($path, 'http')) {
+            Storage::disk(self::DISK)->delete($path);
+        }
     }
 
     /**
@@ -70,8 +94,13 @@ class ImageService
      */
     public function uploadAvatar(UploadedFile $file, string $userId): string
     {
-        $filename = $this->generateFilename($file);
+        if (config('cloudinary.cloud_url')) {
+            return Cloudinary::upload($file->getRealPath(), [
+                'folder' => "avatars/{$userId}"
+            ])->getSecurePath();
+        }
 
+        $filename = $this->generateFilename($file);
         return $file->storeAs("avatars/{$userId}", $filename, self::DISK);
     }
 

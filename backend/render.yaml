@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: pawshome-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: APP_NAME
+        value: PawsHome
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+      - key: CACHE_DRIVER
+        value: file
+      - key: SESSION_DRIVER
+        value: cookie
+      - key: FILESYSTEM_DISK
+        value: public
+      # ── Set these manually in the Render Dashboard ──────────────────────────
+      # APP_KEY        = base64:MIZ5C5JkBpqSrOxRXWhT0kmrXiuy5srCekhOHjTqSPU=
+      # DATABASE_URL   = your Supabase connection string
+      # CLOUDINARY_URL = your Cloudinary URL
+      # FRONTEND_URL   = https://<your-app>.vercel.app
+      # APP_URL        = https://<your-render-service>.onrender.com

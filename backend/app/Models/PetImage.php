@@ -38,6 +38,8 @@ class PetImage extends Model
 
     public function getUrlAttribute(): string
     {
-        return '/storage/' . $this->path;
+        return str_starts_with($this->path, 'http') 
+            ? $this->path 
+            : '/storage/' . $this->path;
     }
 }

@@ -1,12 +1,15 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  withCredentials: true,
+  // Only send credentials (cookies) when proxying locally.
+  // In production, we use Bearer tokens so withCredentials must be false
+  // to avoid CORS preflight failures across Vercel → Render.
+  withCredentials: !import.meta.env.VITE_API_URL,
 })
 
 // ── Request interceptor: inject auth token ─────────────────────────────────
