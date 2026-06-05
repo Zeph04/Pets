@@ -33,7 +33,7 @@ export function useCreatePet() {
   return useMutation({
     mutationFn: (data) => petService.create(data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: petKeys.lists() })
+      qc.invalidateQueries({ queryKey: petKeys.all })
       toast.success('Cat added successfully! 🐱')
     },
     onError: (err) => {
@@ -47,8 +47,8 @@ export function useUpdatePet(id) {
   return useMutation({
     mutationFn: (data) => petService.update(id, data),
     onSuccess: (updated) => {
-      qc.invalidateQueries({ queryKey: petKeys.lists() })
       qc.setQueryData(petKeys.detail(id), updated)
+      qc.invalidateQueries({ queryKey: petKeys.all })
       toast.success('Cat updated! ✨')
     },
     onError: (err) => {
@@ -62,7 +62,7 @@ export function useDeletePet() {
   return useMutation({
     mutationFn: (id) => petService.remove(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: petKeys.lists() })
+      qc.invalidateQueries({ queryKey: petKeys.all })
       toast.success('Cat removed.')
     },
     onError: (err) => {
@@ -76,7 +76,7 @@ export function useUploadPetImage(petId) {
   return useMutation({
     mutationFn: ({ file, isPrimary }) => petService.uploadImage(petId, file, isPrimary),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: petKeys.detail(petId) })
+      qc.invalidateQueries({ queryKey: petKeys.all })
       toast.success('Image uploaded! 📸')
     },
     onError: () => toast.error('Image upload failed'),
