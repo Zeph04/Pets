@@ -16,7 +16,7 @@ echo "==> Creating storage symlink..."
 php artisan storage:link || true
 
 echo "==> Starting PHP-FPM in background..."
-php-fpm8.2 -D
+php-fpm -D
 
 echo "==> Starting Nginx..."
 exec nginx -g "daemon off;"
