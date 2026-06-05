@@ -55,6 +55,12 @@ export function PetForm({ pet = null, onSuccess }) {
   const handleImageChange = (e) => {
     const file = e.target.files?.[0]
     if (file) {
+      // 5MB max size limit
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image size must be less than 5MB.")
+        e.target.value = '' // Clear the input
+        return
+      }
       setImagePreview(URL.createObjectURL(file))
     }
   }

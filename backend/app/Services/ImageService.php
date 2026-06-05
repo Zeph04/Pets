@@ -34,7 +34,13 @@ class ImageService
 
         if ($cloudinary) {
             $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
-                'folder' => "pets/{$pet->id}"
+                'folder' => "pets/{$pet->id}",
+                'transformation' => [
+                    'width'   => self::MAX_WIDTH,
+                    'height'  => self::MAX_HEIGHT,
+                    'crop'    => 'limit',
+                    'quality' => 'auto'
+                ]
             ]);
             $path = $result['secure_url'];
         } else {
