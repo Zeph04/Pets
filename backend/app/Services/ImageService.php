@@ -21,10 +21,11 @@ class ImageService
     public function uploadPetImage(Pet $pet, UploadedFile $file, bool $isPrimary = false): PetImage
     {
         // Upload to Cloudinary if configured, else fallback to local
-        if (config('cloudinary.cloud_url')) {
-            $path = Cloudinary::upload($file->getRealPath(), [
+        if (config('filesystems.disks.cloudinary.url')) {
+            $result = Cloudinary::uploadApi()->upload($file->getRealPath(), [
                 'folder' => "pets/{$pet->id}"
-            ])->getSecurePath();
+            ]);
+            $path = $result['secure_url'];
         } else {
             $filename  = $this->generateFilename($file);
             $directory = "pets/{$pet->id}";
@@ -94,10 +95,11 @@ class ImageService
      */
     public function uploadAvatar(UploadedFile $file, string $userId): string
     {
-        if (config('cloudinary.cloud_url')) {
-            return Cloudinary::upload($file->getRealPath(), [
+        if (config('filesystems.disks.cloudinary.url')) {
+            $result = Cloudinary::uploadApi()->upload($file->getRealPath(), [
                 'folder' => "avatars/{$userId}"
-            ])->getSecurePath();
+            ]);
+            return $result['secure_url'];
         }
 
         $filename = $this->generateFilename($file);
