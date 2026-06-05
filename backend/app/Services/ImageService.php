@@ -4,10 +4,10 @@ namespace App\Services;
 
 use App\Models\Pet;
 use App\Models\PetImage;
+use Cloudinary\Cloudinary as CloudinaryClient;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ImageService
 {
@@ -16,13 +16,24 @@ class ImageService
     private const MAX_HEIGHT = 1200;
 
     /**
+     * Get a configured Cloudinary client instance, or null if not configured.
+     */
+    private function cloudinary(): ?CloudinaryClient
+    {
+        $url = config('filesystems.disks.cloudinary.url');
+        if (!$url) return null;
+        return new CloudinaryClient(['url' => $url]);
+    }
+
+    /**
      * Upload a pet image, store it on disk, and create a PetImage record.
      */
     public function uploadPetImage(Pet $pet, UploadedFile $file, bool $isPrimary = false): PetImage
     {
-        // Upload to Cloudinary if configured, else fallback to local
-        if (config('filesystems.disks.cloudinary.url')) {
-            $result = Cloudinary::uploadApi()->upload($file->getRealPath(), [
+        $cloudinary = $this->cloudinary();
+
+        if ($cloudinary) {
+            $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
                 'folder' => "pets/{$pet->id}"
             ]);
             $path = $result['secure_url'];
@@ -56,12 +67,13 @@ class ImageService
         if (str_starts_with($image->path, 'http')) {
             // It's on Cloudinary. Extract public ID and delete.
             // Example URL: https://res.cloudinary.com/demo/image/upload/v12345/pets/id/file.jpg
-            $parts = explode('/', $image->path);
-            $publicId = explode('.', end($parts))[0];
-            $folder = $parts[count($parts) - 2];
+            $parts      = explode('/', $image->path);
+            $publicId   = explode('.', end($parts))[0];
+            $folder     = $parts[count($parts) - 2];
             $parentFolder = $parts[count($parts) - 3];
             try {
-                Cloudinary::destroy("{$parentFolder}/{$folder}/{$publicId}");
+                $cloudinary = $this->cloudinary();
+                $cloudinary?->uploadApi()->destroy("{$parentFolder}/{$folder}/{$publicId}");
             } catch (\Exception $e) {
                 // Ignore delete errors to ensure DB record is still deleted
             }
@@ -95,8 +107,10 @@ class ImageService
      */
     public function uploadAvatar(UploadedFile $file, string $userId): string
     {
-        if (config('filesystems.disks.cloudinary.url')) {
-            $result = Cloudinary::uploadApi()->upload($file->getRealPath(), [
+        $cloudinary = $this->cloudinary();
+
+        if ($cloudinary) {
+            $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
                 'folder' => "avatars/{$userId}"
             ]);
             return $result['secure_url'];
