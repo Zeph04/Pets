@@ -7,10 +7,9 @@ php artisan migrate --force
 echo "==> Seeding roles & admin..."
 php artisan db:seed --force
 
-echo "==> Caching config, routes and views..."
+echo "==> Caching config and routes..."
 php artisan config:cache
 php artisan route:cache
-php artisan view:cache
 
 echo "==> Creating storage symlink..."
 php artisan storage:link || true
