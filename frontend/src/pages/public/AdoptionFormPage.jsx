@@ -80,66 +80,108 @@ export function AdoptionFormPage() {
             Tell us a little about yourself and your home so we can find the perfect match.
           </p>
 
-          <form onSubmit={handleSubmit(mutate)} className="space-y-5">
+          <form onSubmit={handleSubmit((data) => {
+              // Convert radio string values to booleans for the backend
+              const payload = {
+                ...data,
+                has_other_pets: data.has_other_pets === 'yes',
+                has_children: data.has_children === 'yes',
+                references: data.notes // Mapping notes to references
+              };
+              
+              if (!payload.has_other_pets) delete payload.other_pets_description;
+              if (!payload.has_children) delete payload.children_ages;
+              
+              mutate(payload);
+            })} className="space-y-5">
+            
             {/* Living situation */}
             <div>
-              <label className="label">What type of home do you live in?</label>
-              <select
-                {...register('living_situation', { required: 'Please select your living situation' })}
-                className="input bg-neutral-950 border-neutral-700 text-white"
-              >
-                <option value="">Select…</option>
-                <option value="house">House</option>
-                <option value="apartment">Apartment</option>
-                <option value="condo">Condo</option>
-                <option value="other">Other</option>
-              </select>
+              <label className="label">Living Situation *</label>
+              <textarea
+                {...register('living_situation', { 
+                  required: 'Please describe your living situation',
+                  minLength: { value: 20, message: 'Please write at least 20 characters' } 
+                })}
+                rows={3}
+                placeholder="Describe your home (house/apartment, rent/own, yard access, activity level)..."
+                className="input bg-neutral-950 border-neutral-700 text-white resize-none"
+              />
               {errors.living_situation && <p className="error-text">{errors.living_situation.message}</p>}
             </div>
 
-            {/* Has yard */}
-            <div>
-              <label className="label">Do you have a yard or outdoor space?</label>
-              <div className="flex gap-4">
-                {['yes', 'no'].map(v => (
-                  <label key={v} className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" value={v} {...register('has_yard', { required: 'Required' })}
-                      className="accent-brand-500" />
-                    <span className="text-sm capitalize text-neutral-300">{v}</span>
-                  </label>
-                ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* Other pets */}
+              <div>
+                <label className="label">Do you have other pets? *</label>
+                <div className="flex gap-4 mb-2">
+                  {['yes', 'no'].map(v => (
+                    <label key={v} className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" value={v} {...register('has_other_pets', { required: 'Required' })}
+                        className="accent-brand-500" />
+                      <span className="text-sm capitalize text-neutral-300">{v}</span>
+                    </label>
+                  ))}
+                </div>
+                {errors.has_other_pets && <p className="error-text">{errors.has_other_pets.message}</p>}
               </div>
-              {errors.has_yard && <p className="error-text">{errors.has_yard.message}</p>}
+
+              {/* Children */}
+              <div>
+                <label className="label">Do you have children? *</label>
+                <div className="flex gap-4 mb-2">
+                  {['yes', 'no'].map(v => (
+                    <label key={v} className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" value={v} {...register('has_children', { required: 'Required' })}
+                        className="accent-brand-500" />
+                      <span className="text-sm capitalize text-neutral-300">{v}</span>
+                    </label>
+                  ))}
+                </div>
+                {errors.has_children && <p className="error-text">{errors.has_children.message}</p>}
+              </div>
             </div>
 
-            {/* Other pets */}
+            {/* Other Pets Description (Conditional) */}
             <div>
-              <label className="label">Do you have other pets?</label>
+              <label className="label">If you have other pets, please describe them</label>
               <textarea
-                {...register('other_pets')}
+                {...register('other_pets_description')}
                 rows={2}
-                placeholder="If yes, please describe them (species, breed, age)…"
+                placeholder="Species, breed, age, temperament..."
                 className="input bg-neutral-950 border-neutral-700 text-white resize-none"
+              />
+            </div>
+
+            {/* Children Ages (Conditional) */}
+            <div>
+              <label className="label">If you have children, what are their ages?</label>
+              <input
+                {...register('children_ages')}
+                placeholder="e.g. 5, 8, and 12"
+                className="input bg-neutral-950 border-neutral-700 text-white"
               />
             </div>
 
             {/* Experience */}
             <div>
-              <label className="label">Previous experience with cats *</label>
+              <label className="label">Previous experience with cats</label>
               <textarea
-                {...register('experience', { required: 'Please describe your experience' })}
+                {...register('experience')}
                 rows={3}
                 placeholder="Tell us about any previous experience caring for cats or other pets…"
                 className="input bg-neutral-950 border-neutral-700 text-white resize-none"
               />
-              {errors.experience && <p className="error-text">{errors.experience.message}</p>}
             </div>
 
             {/* Reason */}
             <div>
               <label className="label">Why do you want to adopt {pet.name}? *</label>
               <textarea
-                {...register('reason', { required: 'Please tell us why you want to adopt', minLength: { value: 50, message: 'Please write at least 50 characters' } })}
+                {...register('reason', { 
+                  required: 'Please tell us why you want to adopt', 
+                  minLength: { value: 50, message: 'Please write at least 50 characters' } 
+                })}
                 rows={4}
                 placeholder={`Tell us why ${pet.name} is the right cat for you…`}
                 className="input bg-neutral-950 border-neutral-700 text-white resize-none"
@@ -147,13 +189,13 @@ export function AdoptionFormPage() {
               {errors.reason && <p className="error-text">{errors.reason.message}</p>}
             </div>
 
-            {/* Notes */}
+            {/* Notes / References */}
             <div>
-              <label className="label">Additional notes <span className="text-neutral-500 font-normal">(optional)</span></label>
+              <label className="label">References or Additional Notes <span className="text-neutral-500 font-normal">(optional)</span></label>
               <textarea
                 {...register('notes')}
                 rows={2}
-                placeholder="Anything else you'd like us to know?"
+                placeholder="Veterinarian reference or anything else you'd like us to know?"
                 className="input bg-neutral-950 border-neutral-700 text-white resize-none"
               />
             </div>
