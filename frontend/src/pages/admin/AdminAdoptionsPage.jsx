@@ -144,19 +144,19 @@ function ReviewForm({ application: app, statusOptions, isPending, onSubmit }) {
         {app.living_situation && (
           <div>
             <span className="text-neutral-500">Living Situation:</span>
-            <span className="text-white ml-2 capitalize">{app.living_situation}</span>
+            <span className="text-white ml-2 break-words whitespace-pre-wrap">{app.living_situation}</span>
           </div>
         )}
         {app.experience && (
           <div>
             <span className="text-neutral-500 block mb-1">Experience:</span>
-            <p className="text-neutral-300 bg-neutral-900 rounded-lg p-3">{app.experience}</p>
+            <p className="text-neutral-300 bg-neutral-900 rounded-lg p-3 break-words whitespace-pre-wrap">{app.experience}</p>
           </div>
         )}
         {app.reason && (
           <div>
             <span className="text-neutral-500 block mb-1">Reason for adoption:</span>
-            <p className="text-neutral-300 bg-neutral-900 rounded-lg p-3">{app.reason}</p>
+            <p className="text-neutral-300 bg-neutral-900 rounded-lg p-3 break-words whitespace-pre-wrap">{app.reason}</p>
           </div>
         )}
       </div>
