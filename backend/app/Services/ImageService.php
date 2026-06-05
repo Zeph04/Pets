@@ -22,7 +22,7 @@ class ImageService
     {
         $url = config('filesystems.disks.cloudinary.url');
         if (!$url) return null;
-        return new CloudinaryClient(['url' => $url]);
+        return new CloudinaryClient($url);
     }
 
     /**
